@@ -2,8 +2,19 @@ import UIKit
 import AVFoundation
 import CoreVideo
 
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = CameraViewController()
+        window?.makeKeyAndVisible()
+        return true
+    }
+}
+
 class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
-    
     private var captureSession: AVCaptureSession?
     private var previewLayer: CALayer?
     private var isHorizonLocked = true
@@ -107,8 +118,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         
         DispatchQueue.main.async {
             if self.isHorizonLocked {
-                let rotation = self.getDeviceRotationAngle()
-                self.previewLayer?.transform = CATransform3DMakeRotation(-rotation, 0, 0, 1)
+                self.previewLayer?.transform = CATransform3DMakeRotation(0, 0, 0, 1)
             } else {
                 self.previewLayer?.transform = CATransform3DIdentity
             }
@@ -120,31 +130,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         }
     }
 
-    private func getDeviceRotationAngle() -> CGFloat {
-        // Sửa lỗi shared.delegate -> shared()
-        return 0.0 // Tạm thời để 0.0 để build qua, ông có thể dùng CoreMotion sau
-    }
-    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .all
     }
 }
-
-// Tách biệt hoàn toàn AppDelegate để tránh lỗi top-level code
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = CameraViewController()
-        window?.makeKeyAndVisible()
-        return true
-    }
-}
-
-// Khởi tạo app thủ công thay vì dùng @main để tránh lỗi compiler
-UIApplicationMain(
-    CommandLine.argc,
-    CommandLine.unsafeArgv,
-    nil,
-    NSStringFromClass(AppDelegate.self)
-)
