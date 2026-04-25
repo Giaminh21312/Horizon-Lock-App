@@ -1,0 +1,35 @@
+name: Build IPA Landscape
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Xcode Project
+        run: |
+          # Dùng script ruby để tạo nhanh project Xcode mà không cần mở app
+          ruby ProjectConfig.rb
+
+      - name: Archive Project
+        run: |
+          xcodebuild archive \
+            -project HorizonLockApp.xcodeproj \
+            -scheme HorizonLockApp \
+            -archivePath build/HorizonLockApp.xcarchive \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA (Unsigned)
+        run: |
+          mkdir -p build/Payload
+          cp -r build/HorizonLockApp.xcarchive/Products/Applications/HorizonLockApp.app build/Payload/
+          cd build && zip -r HorizonLockApp.ipa Payload
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HorizonLockApp-IPA
+          path: build/HorizonLockApp.ipa
